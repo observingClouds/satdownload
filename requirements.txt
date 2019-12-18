@@ -1,0 +1,10 @@
+xarray>=0.11
+numpy
+netcdf4
+scipy
+tqdm
+pandas
+dask
+gcsfs
+satpy
+pyresample
