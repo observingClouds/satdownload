@@ -112,6 +112,18 @@ def compress_dataset(ds, compression=4):
     return ds
 
 
+def add_metadata(ds, url):
+    """
+    Add metadata to dataset
+    """
+    ds.attrs['title'] = 'Subset of AIRS Level3 data'
+    ds.attrs['created_with'] = __file__
+    ds.attrs['created_on'] = dt.datetime.now().strftime('%Y%m%d %H%M')
+    ds.attrs['source'] = url
+
+    return ds
+
+
 def get_data_from_url(url, date, settings):
     """
     Worker function that
@@ -135,6 +147,9 @@ def get_data_from_url(url, date, settings):
 
         # Compress dataset
         ds_subset = compress_dataset(ds_subset)
+
+        # Add metainformation
+        ds_subset = add_metadata(ds_subset, url)
 
         # Write dataset to disk
         ds_subset.to_netcdf("AIRS__{time}.nc".format(time=date.strftime('%Y%m%d')))
