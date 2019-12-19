@@ -112,6 +112,30 @@ def compress_dataset(ds, compression=4):
     return ds
 
 
+def add_time_dimension(ds, times):
+    """
+    Time dimension is added to the dataset
+
+    Input
+    -----
+    ds : xr.Dataset
+        Dataset with missing time dimension
+    times : datetime
+        Times that will span the time dimension
+
+    Returns
+    -------
+    ds_out : xr.Dataset
+        Dataset with time dimension
+    """
+    ds_out = ds
+
+    for var in ds.data_vars:
+        ds_out[var] = ds[var].expand_dims({'time':[times]})
+
+    return ds_out
+
+
 def add_metadata(ds, url):
     """
     Add metadata to dataset
@@ -144,6 +168,9 @@ def get_data_from_url(url, date, settings):
         ds_subset = subset_dataset(ds_in,
                                    settings["vars_of_interest"],
                                    settings["sat_region"])
+
+        # Add time dimension
+        ds_subset = add_time_dimension(ds_subset, date)
 
         # Compress dataset
         ds_subset = compress_dataset(ds_subset)
