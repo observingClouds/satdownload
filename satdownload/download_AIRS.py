@@ -179,7 +179,7 @@ def get_data_from_url(url, date, settings):
         ds_subset = add_metadata(ds_subset, url)
 
         # Write dataset to disk
-        ds_subset.to_netcdf("AIRS__{time}.nc".format(time=date.strftime('%Y%m%d')))
+        ds_subset.to_netcdf("AIRS__{time}.nc".format(time=date.strftime('%Y%m%d')), unlimited_dims=['time'])
 
 
 def main():
