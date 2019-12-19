@@ -2,6 +2,16 @@
 
 Collection of scripts to download satellite data
 
+## Installation
+
+Install package with anaconda
+
+```
+conda create -n satdownload
+conda activate satdownload
+conda install -c observingClouds satdownload
+```
+
 ## GOES16
 Example of downloading the midnight image:
 ```bash
