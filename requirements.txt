@@ -8,3 +8,5 @@ dask
 gcsfs
 satpy
 pyresample
+pydap
+requests

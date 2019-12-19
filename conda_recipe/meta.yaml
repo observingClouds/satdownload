@@ -26,3 +26,5 @@ requirements:
     - gcsfs
     - satpy
     - pyresample
+    - pydap
+    - requests
