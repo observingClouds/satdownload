@@ -1,0 +1,28 @@
+package:
+  name: satdownload
+  version: {{ GIT_DESCRIBE_TAG }}
+
+source:
+  path: ..
+
+build:
+  number: 0
+  script: python setup.py install --single-version-externally-managed --record=record.txt
+
+requirements:
+  build:
+    - python
+    - setuptools
+    - setuptools-git-version
+  run:
+    - python
+    - xarray>=0.11
+    - numpy
+    - netcdf4
+    - scipy
+    - tqdm
+    - pandas
+    - dask
+    - gcsfs
+    - satpy
+    - pyresample

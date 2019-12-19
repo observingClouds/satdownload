@@ -331,7 +331,7 @@ def date_input2dates(date_str):
         raise ValueError
 
 
-if __name__ == '__main__':
+def main():
     product = 'ABI-L1b-RadF'  # This script is adjusted to the L1b level data (e.g. scene reader== 'abi_l1b')
     args = get_args()
 
@@ -435,3 +435,6 @@ if __name__ == '__main__':
         gc.collect()
 
     tmpdir_obj.cleanup()
+
+if __name__ == '__main__':
+    main()
