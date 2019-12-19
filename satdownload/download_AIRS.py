@@ -159,9 +159,11 @@ def main():
     stop_date = dt.datetime.strptime(args["date"].split("-")[1], "%Y%m%d")
     dates = pd.date_range(start_date, stop_date)
 
+    print('Gathering data urls')
     urls = download_all_available_URLS()
     url_lookup = create_url_lookup(urls)
 
+    print('Start downloading data')
     for d, date in enumerate(tqdm.tqdm(dates)):
         # Get data url for date
         try:
