@@ -132,7 +132,7 @@ def get_tmp_dir():
     return tmpdir, tmpdir_obj
 
 
-def find_remote_files(product, date, channel):
+def find_remote_files(product, date, channel, fs):
     """
     Find satellite files on the remote server,
     that fit the requirements set by user e.g.
@@ -240,7 +240,7 @@ def define_output_area(lat0, lon0, lat1, lon1):
     return area_out
 
 
-def write_netcdf(resampled_data, lons, lats, original_filename, channel, outputfile, netcdf_attrs):
+def write_netcdf(resampled_data, lons, lats, original_filename, channel, outputfile, netcdf_attrs, compression):
     time = resampled_data.attrs['start_time']
     var_attrs = resampled_data.attrs
     import copy
@@ -252,7 +252,7 @@ def write_netcdf(resampled_data, lons, lats, original_filename, channel, outputf
     goes16_sat_xr = xr.Dataset()
 
     goes16_sat_xr[channel] = xr.DataArray(resampled_data.values[None, :, :], dims=['time', 'lat', 'lon'])
-    goes16_sat_xr[channel].encoding = {"zlib": True, "complevel": args["compression"], "_FillValue": np.nan}
+    goes16_sat_xr[channel].encoding = {"zlib": True, "complevel": compression, "_FillValue": np.nan}
     goes16_sat_xr[channel].attrs = var_attrs
 
     goes16_sat_xr['lat'] = lats[:, 0]
@@ -381,11 +381,11 @@ def main():
 
     logging.info('Start downloading raw data to temporary directory {}'.format(tmpdir))
     if isinstance(dates, datetime.date):
-        files_2_download = find_remote_files(product, dates, channel)
+        files_2_download = find_remote_files(product, dates, channel, fs)
     elif isinstance(dates, pd.DatetimeIndex):
         files_2_download = []
         for date in dates:
-            files_2_download.extend(find_remote_files(product, date, channel))
+            files_2_download.extend(find_remote_files(product, date, channel, fs))
     if args['timesteps'] is not None:
         mod_hour, mod_minute = args['timesteps']
         files_2_download = filter_filelist(files_2_download, mod_hour, mod_minute)
@@ -426,7 +426,7 @@ def main():
             output_region_scene = input_sat_scene.resample(area_out)
         resampled_data = output_region_scene.datasets[channel]
         logging.info('Write output to netcdf')
-        write_netcdf(resampled_data, lons, lats, files_2_download[f_i], channel, outputfile, netcdf_attrs)
+        write_netcdf(resampled_data, lons, lats, files_2_download[f_i], channel, outputfile, netcdf_attrs, args["compression"])
         input_sat_scene.unload()
         output_region_scene.unload()
         del input_sat_scene
