@@ -102,6 +102,16 @@ def get_args():
                                                                     'files to be downloaded in time. (0 0) for latest image', required=False,
                         default='0 0', nargs=2, type=int)
 
+    parser.add_argument('-g', '--googletoken', metavar="token", help='In case the download does not work for anonymous'
+                                                                      'provide a token or path to a google credential'
+                                                                      'file, see https://gcsfs.readthedocs.io/en/latest/'
+                                                                      'index.html#credentials. The JSON file created by'
+                                                                      'gsutil (has to be installed separatly) at ~/.con'
+                                                                      'fig/gcloud/legacy_credentials/$USER/adc.json has'
+                                                                      'been tested successfully.'
+                                                                      'In order to get this file the command `gcloud '
+                                                                      'auth login` might need to be executed.',
+                        required=False, default='anon')
 
     parser.add_argument('-v', '--verbose', metavar="DEBUG", help='Set the level of verbosity [DEBUG, INFO, WARNING, ERROR]',
                         required=False, default="INFO")
@@ -384,7 +394,7 @@ def main():
     tmpdir, tmpdir_obj = get_tmp_dir()
 
     try:
-        fs = gcsfs.GCSFileSystem(project='gcp-public-data-goes-16/' + product + '/', token='anon')
+        fs = gcsfs.GCSFileSystem(project='gcp-public-data-goes-16/' + product + '/', token=token)
     except:
         logging.error('Connection not successful', exc_info=True)
 
