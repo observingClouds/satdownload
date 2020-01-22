@@ -352,15 +352,22 @@ def date_input2dates(date_str):
 
 
 def main():
-    product = 'ABI-L1b-RadF'  # This script is adjusted to the L1b level data (e.g. scene reader== 'abi_l1b')
     args = get_args()
+
+    product = args['product']
+    if 'L2' in product:
+        reader = 'abi_l2_nc'
+        channel = args['channel']
+    elif 'L1' in product:
+        reader = 'abi_l1b'
+        channel = args["channel"]
 
     date_str = args["date"]
     dates = date_input2dates(date_str)
 
-    channel = args["channel"]
     verbose = args["verbose"]
     region = args["region"]
+    token = args["googletoken"]
     setup_logging(verbose)
     setup_logging(verbose)
     logging.info("Set up logging.")
