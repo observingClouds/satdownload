@@ -78,7 +78,7 @@ def get_args():
     parser.add_argument('-o', '--outputfile', metavar="/path/to/outputfile_{channel}_%Y%m%d_%H%M.nc",
                         required=False, help='Provide filename of output. If several timestamps are selected, it is'
                                              'recommended to provide a filename format, otherwise the file is over'
-                                             'written each time. Valid formaters are %Y, %m, %d, {N1}, {N2}, {E1},'
+                                             'written each time. Valid formaters are %%Y, %%m, %%d, {N1}, {N2}, {E1},'
                                              '{E2}, {channel}.')
 
     parser.add_argument('-z', '--compression', metavar="COMPRESSION_LEVEL",
