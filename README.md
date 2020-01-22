@@ -18,6 +18,11 @@ Example of downloading the midnight image:
 GOES16_download -d 20191217 -r 10 20 -60 -50 -k 13 -o ./out_%Y%m%d_%H%M.nc -t 24 60
 ```
 
+Example of downloading the latest data of the level 2 AOD product:
+```bash
+GOES16_download -d 20200117 -r 10 20 -60 -50 -o ./GOES16__{channel}__{N1}N-{N2}N_{E1}E-{E2}E__%Y%m%d_%H%M.nc -t 0 0 -p ABI-L2-AODF -k AOD
+```
+
 ## AIRS
 Example to download AIRS Level3 data:
 ```bash
