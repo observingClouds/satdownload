@@ -99,8 +99,9 @@ def get_args():
                         required=False, default='ABI-L1b-RadF')
 
     parser.add_argument('-t', '--timesteps', metavar='12 60', help='Provide mod_hour and mod_minute who restrict the '
-                                                                    'files to be downloaded in time', required=False,
-                        default=None, nargs=2, type=int)
+                                                                    'files to be downloaded in time. (0 0) for latest image', required=False,
+                        default='0 0', nargs=2, type=int)
+
 
     parser.add_argument('-v', '--verbose', metavar="DEBUG", help='Set the level of verbosity [DEBUG, INFO, WARNING, ERROR]',
                         required=False, default="INFO")
@@ -189,14 +190,17 @@ def filter_filelist(files: list, hour_mod: int = 12, min_mod: int = 60) -> list:
         List of remote file addresses
     """
     files_restricted = []
-    for file in files:
-        hour = int(file.split("_")[3][8:10])
-        minute = int(file.split("_")[3][10:12])
-        if hour % hour_mod == 0 and minute % min_mod == 0:
-            files_restricted.append(file)
-            logging.debug(f'Remote file added: {file}')
-        else:
-            logging.debug(f'Remote file ignored: {file}')
+    if hour_mod == 0 and min_mod == 0:
+        files_restricted.append(sorted(files)[-1])
+    else:
+        for file in files:
+            hour = int(file.split("_")[3][8:10])
+            minute = int(file.split("_")[3][10:12])
+            if hour % hour_mod == 0 and minute % min_mod == 0:
+                files_restricted.append(file)
+                logging.debug(f'Remote file added: {file}')
+            else:
+                logging.debug(f'Remote file ignored: {file}')
     logging.info('Files to be downloaded has been reduced from {} to {}'.format(len(files), len(files_restricted)))
     return files_restricted
 
