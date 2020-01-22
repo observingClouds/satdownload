@@ -186,8 +186,8 @@ def main():
     args = get_args()
 
     settings = {}
-    settings["eosdis_username"] = args["username"]  # ShallowCumulus
-    settings["eosdis_password"] = args["password"]  # 'SkJ-gSr-86H-hQE'
+    settings["eosdis_username"] = args["username"]
+    settings["eosdis_password"] = args["password"]
     settings["vars_of_interest"] = args["measurements"]
 
     #lat0, lat1, lon0, lon1 = (10, 20, -62, -52)
