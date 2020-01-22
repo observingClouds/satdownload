@@ -280,8 +280,7 @@ def write_netcdf(resampled_data, lons, lats, original_filename, channel, outputf
 
     outputfile = dt.strftime(time, outputfile)
 
-    goes16_sat_xr.to_netcdf(outputfile)
-
+    goes16_sat_xr.to_netcdf(outputfile, unlimited_dims={'time':True})
 
 def check_numpy_compatibility():
     """
