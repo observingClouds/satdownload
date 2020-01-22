@@ -93,7 +93,10 @@ def get_args():
                         help='Provide the region for the output', required=True)
 
     parser.add_argument('-k', '--channel', metavar="1..16", help='Provide the channel of the ABI',
-                        required=True, default=None)
+                        required=False, default=None)
+
+    parser.add_argument('-p', '--product', metavar="ABI-L2-AODF", help='Product of GOES16',
+                        required=False, default='ABI-L1b-RadF')
 
     parser.add_argument('-t', '--timesteps', metavar='12 60', help='Provide mod_hour and mod_minute who restrict the '
                                                                     'files to be downloaded in time', required=False,
@@ -143,8 +146,12 @@ def find_remote_files(product, date, channel, fs):
     files : list
         List of remote file addresses
     """
-    files = [fs.glob('gcp-public-data-goes-16/' + product + '/' + str(date.year) + '/' +
-                     '{0:03g}'.format(int(date.strftime('%j'))) + '/*/*M[36]C' + str(channel) + '*.nc')]
+    if 'L1' in product:
+        files = [fs.glob('gcp-public-data-goes-16/' + product + '/' + str(date.year) + '/' +
+                         '{0:03g}'.format(int(date.strftime('%j'))) + '/*/*M[36]C' + str(channel) + '*.nc')]
+    elif 'L2' in product:
+        files = [fs.glob('gcp-public-data-goes-16/' + product + '/' + str(date.year) + '/' +
+                         '{0:03g}'.format(int(date.strftime('%j'))) + '/*/*' + str(product) + '*M[36]' + '*.nc')]
 
     files = [y for x in files for y in x]
 
@@ -409,7 +416,12 @@ def main():
                         version=git_module_version)
 
     lat_min, lat_max, lon_min, lon_max = np.array(args['region'], dtype='float')
-    channel = 'C' + args['channel']
+
+    if 'L1' in product:
+        channel = "C{0:0>2}".format(args['channel'])
+    elif 'L2' in product:
+        pass
+
     files_local = sorted(glob.glob(tmpdir + '/*'))
 
     logging.info('Local files: {}'.format(files_local))
@@ -417,7 +429,7 @@ def main():
     lons, lats = area_out.get_lonlats()
     for f_i, f in tqdm(enumerate(files_local)):
         logging.info('Loading scene')
-        input_sat_scene = Scene(reader="abi_l1b", filenames=[f])
+        input_sat_scene = Scene(reader=reader, filenames=[f])
         input_sat_scene.load([channel])
         logging.info('Resampling scene')
         if check_numpy_compatibility():
