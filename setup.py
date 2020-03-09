@@ -23,9 +23,11 @@ setuptools.setup(
     ],
     python_requires='>=3.6',
     install_requires=["xarray>=0.11", "numpy", "netcdf4", "tqdm", "pandas",
-                      "gcsfs", "satpy", "pyresample", "requests", "pydap"],
+                      "gcsfs", "satpy", "pyresample", "requests", "pydap",
+                      "siphon"],
     entry_points={'console_scripts':
                     ['GOES16_download=satdownload.download_GOES16:main',
-                     'AIRS_download=satdownload.download_AIRS:main'
+                     'AIRS_download=satdownload.download_AIRS:main',
+                     'GridsatB1_download=satdownload.download_gridsatb1:main'
                      ]}
 )

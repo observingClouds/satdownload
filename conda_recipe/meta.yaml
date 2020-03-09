@@ -28,3 +28,4 @@ requirements:
     - pyresample
     - pydap
     - requests
+    - siphon

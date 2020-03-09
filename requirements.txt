@@ -10,3 +10,4 @@ satpy
 pyresample
 pydap
 requests
+siphon
