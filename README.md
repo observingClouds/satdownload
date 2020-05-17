@@ -32,5 +32,5 @@ AIRS_download -d 20180101-20180102 -r 10 20 -62 -52 -m Temperature_A H2O_MMR_A T
 ## GridsatB1
 Example to download GridsatB1 data:
 ```bash
-GridsatB1_download -y 2020 -m 01 02 -r 5 25 -63 -43 -o ./Gridsat-B1__5-25N_-63--43E__%Y%m%d.nc
+GridsatB1_download -y 2020 -m 01 02 -r 5 25 -63 -43 -o ./Gridsat-B1__5-25N_-63--43E__{time}.nc
 ```
