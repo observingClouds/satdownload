@@ -22,7 +22,7 @@ setuptools.setup(
         "Operating System :: OS Independent",
     ],
     python_requires='>=3.6',
-    install_requires=["xarray>=0.11", "numpy", "netcdf4", "tqdm", "pandas",
+    install_requires=["xarray>=0.14.1", "numpy", "netcdf4", "tqdm", "pandas",
                       "gcsfs", "satpy", "pyresample", "requests", "pydap",
                       "siphon"],
     entry_points={'console_scripts':
