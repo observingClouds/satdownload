@@ -456,7 +456,11 @@ def main():
             output_region_scene = input_sat_scene.resample(area_out, cache_dir='./')
         else:
             output_region_scene = input_sat_scene.resample(area_out)
-        resampled_data = output_region_scene.datasets[channel]
+        try:
+            resampled_data = output_region_scene.datasets[channel]
+        except:
+            resampled_data = output_region_scene[channel]
+            logging.warning('The version of satpy you are using is depreciated. Please update')
         logging.info('Write output to netcdf')
         write_netcdf(resampled_data, lons, lats, files_2_download[f_i], channel, outputfile, netcdf_attrs, args["compression"])
         input_sat_scene.unload()
