@@ -98,6 +98,12 @@ def get_args():
     parser.add_argument('-p', '--product', metavar="ABI-L2-AODF", help='Product of GOES16',
                         required=False, default='ABI-L1b-RadF')
 
+    parser.add_argument('-m', '--mesoregion', metavar="1", help='In case a meso region product has'
+                                                                'been selected, the mesoregion of'
+                                                                'interest can be selected. Default: both'
+                                                                'mesoregions are downloaded',
+                        required=False, default=None, type=str)
+
     parser.add_argument('-t', '--timesteps', metavar='12 60', help='Provide mod_hour and mod_minute who restrict the '
                                                                     'files to be downloaded in time. (0 0) for latest image', required=False,
                         default='0 0', nargs=2, type=int)
@@ -146,7 +152,7 @@ def get_tmp_dir():
     return tmpdir, tmpdir_obj
 
 
-def find_remote_files(product, date, channel, fs):
+def find_remote_files(product, date, channel, fs, mesoregion=None):
     """
     Find satellite files on the remote server,
     that fit the requirements set by user e.g.
@@ -159,10 +165,12 @@ def find_remote_files(product, date, channel, fs):
     """
     if 'L1' in product:
         files = [fs.glob('gcp-public-data-goes-16/' + product + '/' + str(date.year) + '/' +
-                         '{0:03g}'.format(int(date.strftime('%j'))) + '/*/*M[36]C' + str(channel) + '*.nc')]
+                         '{0:03g}'.format(int(date.strftime('%j'))) +
+                         '/*/*{mesoregion}*M[36]C'.replace("{mesoregion}", mesoregion) + str(channel) + '*.nc')]
     elif 'L2' in product:
         files = [fs.glob('gcp-public-data-goes-16/' + product + '/' + str(date.year) + '/' +
-                         '{0:03g}'.format(int(date.strftime('%j'))) + '/*/*' + str(product) + '*M[36]' + '*.nc')]
+                         '{0:03g}'.format(int(date.strftime('%j'))) +
+                         '/*/*{mesoregion}*'.replace("{mesoregion}", mesoregion) + str(product) + '*M[36]' + '*.nc')]
 
     files = [y for x in files for y in x]
 
@@ -362,6 +370,7 @@ def main():
         reader = 'abi_l1b'
         channel = args["channel"]
 
+    assert args['mesoregion'] in [None, 'M1', 'M2'], "Mesoregion needs to be None (default), M1 or M2"
     date_str = args["date"]
     dates = date_input2dates(date_str)
 
@@ -383,7 +392,8 @@ def main():
     outputfile = outputfile.replace('{N2}', region[1])
     outputfile = outputfile.replace('{E1}', region[2])
     outputfile = outputfile.replace('{E2}', region[3])
-    outputfile = outputfile.replace('{channel}', args["channel"])
+    outputfile = outputfile.replace('{channel}', channel)
+    outputfile = outputfile.replace('{mesoregion}', args["mesoregion"])
 
     output_path = os.path.dirname(outputfile)
     if not os.path.isdir(output_path):
@@ -408,11 +418,11 @@ def main():
 
     logging.info('Start downloading raw data to temporary directory {}'.format(tmpdir))
     if isinstance(dates, datetime.date):
-        files_2_download = find_remote_files(product, dates, channel, fs)
+        files_2_download = find_remote_files(product, dates, channel, fs, args["mesoregion"])
     elif isinstance(dates, pd.DatetimeIndex):
         files_2_download = []
         for date in dates:
-            files_2_download.extend(find_remote_files(product, date, channel, fs))
+            files_2_download.extend(find_remote_files(product, date, channel, fs, args["mesoregion"]))
     if args['timesteps'] is not None:
         mod_hour, mod_minute = args['timesteps']
         files_2_download = filter_filelist(files_2_download, mod_hour, mod_minute)
