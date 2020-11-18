@@ -303,7 +303,7 @@ def write_netcdf(resampled_data, lons, lats, original_filename, channel, outputf
 
     goes16_sat_xr['time'] = [time.replace(tzinfo=datetime.timezone.utc).timestamp()]
     goes16_sat_xr['time'].attrs["standard_name"] = "time"
-    goes16_sat_xr['time'].attrs["units"] = "seconds since 1970-1-1 0:00:00 UTC"
+    goes16_sat_xr['time'].attrs["units"] = "seconds since 1970-1-1 0:00:00"
     goes16_sat_xr['time'].attrs["axis"] = "T"
     goes16_sat_xr['time'].attrs["calendar"] = "gregorian"
 
