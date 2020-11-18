@@ -13,6 +13,8 @@ import sys
 import os.path
 import numpy as np
 import time
+import aiohttp
+import asyncio
 import argparse
 import subprocess
 import configparser
@@ -235,19 +237,31 @@ def download_remote_files(output_dir, files):
     """
     logging.debug(f"Try to download files: {files}")
 
-    for file in tqdm(files):
-        file_local = file.split("/")[-1]
-        file_local = output_dir + file_local
+    # Create list of remote and local files
+    base_url = "https://storage.googleapis.com/"
+    urls = [base_url+file for file in files]
+    local_files = [output_dir + file.split("/")[-1] for file in files]
 
-        if os.path.isfile(file_local):
-            logging.info("Raw file {} exists locally".format(file_local))
-            continue
+    async def get(url, local_f):
+        if os.path.isfile(local_f):
+            logging.info("Raw file {} exists locally".format(local_f))
+            pass
         else:
             # Download file
+            try:
+                async with aiohttp.ClientSession() as session:
+                    async with session.get(url=url) as response:
+                        resp = await response.read()
+                        open(local_f, 'wb').write(resp)
 
-            url = "https://storage.googleapis.com/" + file
-            remote_file = requests.get(url)
-            open(file_local, 'wb').write(remote_file.content)
+            except Exception as e:
+                logging.warning("Unable to get url {} due to {}.".format(url, e.__class__))
+                pass
+
+    async def main(urls, local_files):
+        _ = await asyncio.gather(*[get(urls[f], local_files[f]) for f in range(len(urls))])
+
+    asyncio.run(main(urls, local_files))
 
 
 def define_output_area(lat0, lon0, lat1, lon1, res_deg=(1/110, 1/110)):
@@ -345,7 +359,7 @@ def check_numpy_compatibility():
     main = int(get_digits(main))*1000
     sub = int(get_digits(sub))*10
     patch = int(get_digits(patch))
-    logging.info(f'Version number of numpy is {main+sub+patch}')
+    logging.debug(f'Version number of numpy is {main+sub+patch}')
     if main+sub+patch >= 1163: # 1.16.3 --> 1000+160+3
         return False
     else:
@@ -469,10 +483,10 @@ def main():
 
     files_local = sorted(glob.glob(tmpdir + '/*'))
 
-    logging.info('Local files: {}'.format(files_local))
+    logging.debug('Local files: {}'.format(files_local))
     area_out = define_output_area(lat_min, lon_min, lat_max, lon_max, spatial_res)
     lons, lats = area_out.get_lonlats()
-    for f_i, f in tqdm(enumerate(files_local)):
+    for f_i, f in enumerate(tqdm(files_local)):
         logging.info('Loading scene')
         input_sat_scene = Scene(reader=reader, filenames=[f])
         input_sat_scene.load([channel])
