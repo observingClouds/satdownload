@@ -102,7 +102,7 @@ def get_args():
                                                                 'been selected, the mesoregion of'
                                                                 'interest can be selected. Default: both'
                                                                 'mesoregions are downloaded',
-                        required=False, default=None, type=str)
+                        required=False, default='', type=str)
 
     parser.add_argument('-s', '--spatialresolution', nargs='+', metavar="lat_res lon_res",
                         help='Spatial resolution given as number of points per degree.'
@@ -380,7 +380,7 @@ def main():
         reader = 'abi_l1b'
         channel = args["channel"]
 
-    assert args['mesoregion'] in [None, 'M1', 'M2'], "Mesoregion needs to be None (default), M1 or M2"
+    assert args['mesoregion'] in ['', 'M1', 'M2'], "Mesoregion needs to be None (default), M1 or M2"
     res_lat_str, res_lon_str = args["spatialresolution"]
     spatial_res = (float(res_lat_str.split('/')[0])/float(res_lat_str.split('/')[1]),
                    float(res_lon_str.split('/')[0])/float(res_lon_str.split('/')[1])
