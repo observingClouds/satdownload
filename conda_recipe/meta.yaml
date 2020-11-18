@@ -29,3 +29,4 @@ requirements:
     - pydap
     - requests
     - siphon
+    - aiohttp

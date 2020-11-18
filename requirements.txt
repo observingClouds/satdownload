@@ -11,3 +11,4 @@ pyresample
 pydap
 requests
 siphon
+aiohttp
