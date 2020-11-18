@@ -104,6 +104,12 @@ def get_args():
                                                                 'mesoregions are downloaded',
                         required=False, default=None, type=str)
 
+    parser.add_argument('-s', '--spatialresolution', nargs='+', metavar="lat_res lon_res",
+                        help='Spatial resolution given as number of points per degree.'
+                             'Near the equator 1 deg is about 110 km. To get a output resolution'
+                             'of 1km lat_res and lon_res need to be 1/110. (default)', required=False,
+                        default=["1/110", "1/110"], type=str)
+
     parser.add_argument('-t', '--timesteps', metavar='12 60', help='Provide mod_hour and mod_minute who restrict the '
                                                                     'files to be downloaded in time. (0 0) for latest image', required=False,
                         default='0 0', nargs=2, type=int)
@@ -244,7 +250,7 @@ def download_remote_files(output_dir, files):
             open(file_local, 'wb').write(remote_file.content)
 
 
-def define_output_area(lat0, lon0, lat1, lon1):
+def define_output_area(lat0, lon0, lat1, lon1, res_deg=(1/110, 1/110)):
     """
     Create area object with the area and projection
     of interest.
@@ -254,17 +260,21 @@ def define_output_area(lat0, lon0, lat1, lon1):
     lat0, lon0, lat1, lon1 : float
         Extent of area of interest.
         This area defines the output.
+    res_deg : tuple
+        Resolution of resampled data (lat-resolution, lon-resolution)
+        To get a resolution of about 1 km near the equator, the factors
+        should be (1/110, 1/110).
 
     Note
     ----
-    The resolution is currently fixed to about
-    1 km. The factor 1/110 has to be adapted otherwise.
+    The resolution factors are highly depending on the latitude! Only near the equator
+    1 deg is close to 110 km.
     """
     area_out = AreaDefinition.from_extent(area_id='EUREC4A_Upstream',
                                           projection={'a': '6378144.0', 'b': '6356759.0',
                                                       'lat_0': '0.00', 'lat_ts': '50.00',
                                                       'lon_0': '-60.00', 'proj': 'eqc'},
-                                          shape=[np.abs(lon1 - lon0) / (1 / 110), np.abs(lat1 - lat0) / (1 / 110)],
+                                          shape=[np.abs(lon1 - lon0) / res_deg[1], np.abs(lat1 - lat0) / res_deg[0]],
                                           area_extent=[lon0, lat0, lon1, lat1], units='deg')
     return area_out
 
@@ -371,6 +381,11 @@ def main():
         channel = args["channel"]
 
     assert args['mesoregion'] in [None, 'M1', 'M2'], "Mesoregion needs to be None (default), M1 or M2"
+    res_lat_str, res_lon_str = args["spatialresolution"]
+    spatial_res = (float(res_lat_str.split('/')[0])/float(res_lat_str.split('/')[1]),
+                   float(res_lon_str.split('/')[0])/float(res_lon_str.split('/')[1])
+                   )
+
     date_str = args["date"]
     dates = date_input2dates(date_str)
 
@@ -455,7 +470,7 @@ def main():
     files_local = sorted(glob.glob(tmpdir + '/*'))
 
     logging.info('Local files: {}'.format(files_local))
-    area_out = define_output_area(lat_min, lon_min, lat_max, lon_max)
+    area_out = define_output_area(lat_min, lon_min, lat_max, lon_max, spatial_res)
     lons, lats = area_out.get_lonlats()
     for f_i, f in tqdm(enumerate(files_local)):
         logging.info('Loading scene')
