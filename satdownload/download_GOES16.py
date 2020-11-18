@@ -11,6 +11,7 @@ python download_GOES16.py -k 13 -r 10 30 -64 -20 -d 20190519
 import os
 import sys
 import os.path
+import pathlib
 import numpy as np
 import time
 import aiohttp
@@ -25,7 +26,6 @@ import tempfile
 import glob
 import gcsfs
 from tqdm import tqdm
-import requests
 import satpy
 import pyresample
 from satpy import Scene
@@ -82,6 +82,11 @@ def get_args():
                                              'recommended to provide a filename format, otherwise the file is over'
                                              'written each time. Valid formaters are %%Y, %%m, %%d, {N1}, {N2}, {E1},'
                                              '{E2}, {channel}.')
+
+    parser.add_argument('--keep_rawdata', metavar="/folder/to/rawdata", help='Path to rawdata. If given the files'
+                                                                             'are kept locally otherwise they are'
+                                                                             'deleted after regridding (default)',
+                        required=False, default=None)
 
     parser.add_argument('-z', '--compression', metavar="COMPRESSION_LEVEL",
                         help="Set the Level of compression for the output (1-9)",
@@ -262,6 +267,7 @@ def download_remote_files(output_dir, files):
         _ = await asyncio.gather(*[get(urls[f], local_files[f]) for f in range(len(urls))])
 
     asyncio.run(main(urls, local_files))
+    return local_files
 
 
 def define_output_area(lat0, lon0, lat1, lon1, res_deg=(1/110, 1/110)):
@@ -437,7 +443,11 @@ def main():
         logging.warning("Could not find git hash.", exc_info=True)
         git_module_version = "--"
 
-    tmpdir, tmpdir_obj = get_tmp_dir()
+    if args['keep_rawdata'] is None:
+        tmpdir, tmpdir_obj = get_tmp_dir()
+    else:
+        pathlib.Path(args['keep_rawdata']).mkdir(parents=True, exist_ok=True)
+        tmpdir = args['keep_rawdata']
 
     try:
         fs = gcsfs.GCSFileSystem(project='gcp-public-data-goes-16/' + product + '/', token=token)
@@ -456,7 +466,7 @@ def main():
         mod_hour, mod_minute = args['timesteps']
         files_2_download = filter_filelist(files_2_download, mod_hour, mod_minute)
 
-    download_remote_files(tmpdir + '/', files_2_download)
+    local_files = download_remote_files(tmpdir + '/', files_2_download)
 
     logging.info('Start regridding and cropping data')
 
@@ -481,7 +491,7 @@ def main():
     elif 'L2' in product:
         pass
 
-    files_local = sorted(glob.glob(tmpdir + '/*'))
+    files_local = sorted(local_files)
 
     logging.debug('Local files: {}'.format(files_local))
     area_out = define_output_area(lat_min, lon_min, lat_max, lon_max, spatial_res)
@@ -509,7 +519,8 @@ def main():
         del resampled_data
         gc.collect()
 
-    tmpdir_obj.cleanup()
+    if args['keep_rawdata'] is None:
+        tmpdir_obj.cleanup()
 
 if __name__ == '__main__':
     main()
