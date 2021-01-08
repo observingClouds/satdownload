@@ -1,4 +1,5 @@
 # satdownload
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.4393743.svg)](https://doi.org/10.5281/zenodo.4393743)
 
 Collection of scripts to download satellite data
 
