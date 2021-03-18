@@ -247,24 +247,25 @@ def download_remote_files(output_dir, files):
     urls = [base_url+file for file in files]
     local_files = [output_dir + file.split("/")[-1] for file in files]
 
-    async def get(url, local_f):
+
+    async def get(session, url, local_f):
         if os.path.isfile(local_f):
             logging.info("Raw file {} exists locally".format(local_f))
             pass
         else:
             # Download file
-            try:
-                async with aiohttp.ClientSession() as session:
-                    async with session.get(url=url) as response:
-                        resp = await response.read()
-                        open(local_f, 'wb').write(resp)
+            async with session.get(url=url) as response:
+                if response.status == 200:
+                    resp = await response.read()
+                    with open(local_f, "wb") as outfile:
+                        outfile.write(resp)
 
-            except Exception as e:
-                logging.warning("Unable to get url {} due to {}.".format(url, e.__class__))
-                pass
 
     async def main(urls, local_files):
-        _ = await asyncio.gather(*[get(urls[f], local_files[f]) for f in range(len(urls))])
+        conn = aiohttp.TCPConnector(limit=30)
+        timeout = aiohttp.ClientTimeout(total=None, connect=None, sock_connect=30, sock_read=10)
+        async with aiohttp.ClientSession(connector=conn, timeout=timeout) as session:
+          _ = await asyncio.gather(*[get(session, urls[f], local_files[f]) for f in range(len(urls))])
 
     asyncio.run(main(urls, local_files))
     return local_files
